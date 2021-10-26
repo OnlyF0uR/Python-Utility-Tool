@@ -2,10 +2,11 @@ from cmd import Cmd
 from tabulate import tabulate
 
 
+RESET = '\u001b[0m'
+RED = '\u001b[31m'
+GREEN = '\u001b[32m'
 BLUE = '\u001b[34m'
 CYAN = '\u001b[36m'
-RED = '\u001b[31m'
-RESET = '\u001b[0m'
 
 
 class MainPrompt(Cmd):
@@ -13,7 +14,7 @@ class MainPrompt(Cmd):
     use_rawinput = True
 
     def do_help(self, arg: str):
-        print('\nAll commands for this propmt can be found below: ' + CYAN)
+        print('\nAll commands for this prompt can be found below: ')
         cmd_list = [
             ['encryption', 'Encrypt & Decrypt text'],
             ['encoding', 'Encode & Decode text'],
