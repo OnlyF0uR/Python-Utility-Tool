@@ -1,48 +1,43 @@
-# External imports
-import tkinter as tk
-from tkinter import ttk
-
-# Internal imports
-from encryption import Encryption
-from generation import Generation
-from scraping import Scraping
-from calculator import Calculator
+from cmd import Cmd
+from tabulate import tabulate
 
 
-# Should be instantiated once
-class WindowHandler:
-    def __init__(self):
-        # Instantiate classes
-        window = tk.Tk()
-
-        window.title('Utility')
-        window.geometry('500x300')
-
-        # Notebook
-        tab_control = ttk.Notebook(window)
-        # Individual tab frames
-        gen_tab = tk.Frame(tab_control)
-        crypt_tab = tk.Frame(tab_control)
-        scrape_tab = tk.Frame(tab_control)
-        calc_tab = tk.Frame(tab_control)
-
-        # Adding the actual tabs
-        tab_control.add(gen_tab, text='Genereren')
-        tab_control.add(crypt_tab, text='Versluiteling')
-        tab_control.add(scrape_tab, text='Scraping')
-        tab_control.add(calc_tab, text='Mathematiek')
-
-        tab_control.pack(expand=1, fill='both')
-
-        # Set all tabs
-        Generation(gen_tab).set_text()
-        Encryption(crypt_tab).set_text()
-        Scraping(scrape_tab).set_text()
-        Calculator(scrape_tab).set_text()
-
-        # Window loop
-        window.mainloop()
+BLUE = '\u001b[34m'
+CYAN = '\u001b[36m'
+RED = '\u001b[31m'
+RESET = '\u001b[0m'
 
 
-if __name__ == "__main__":
-    WindowHandler()
+class MainPrompt(Cmd):
+    prompt = '{blue}program {cyan}➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
+    use_rawinput = True
+
+    def do_help(self, arg: str):
+        print('\nAll commands for this propmt can be found below: ' + CYAN)
+        cmd_list = [
+            ['encryption', 'Encrypt & Decrypt text'],
+            ['encoding', 'Encode & Decode text'],
+            ['hashing', 'Hash some text'],
+            ['passgen', 'Create a rock(you) solid password'],
+            ['collatz', 'Plot a collatz conjecture'],
+            ['quit', 'Quit the prompt']
+        ]
+        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET, BLUE + "Description" + RESET]))
+
+    def default(self, ln):
+        if ln == 'quit' or ln == 'q':
+            print('Goodbye! :)')
+            return True
+
+        if ln in ['encryption', 'encoding', 'hashing', 'passgen', 'collatz']:
+            # First we import the appropiate module/file
+            mod = __import__(ln)
+            # Then we get the main class and start the command loop
+            getattr(mod, 'Prompt')(self).cmdloop()
+            return True
+        else:
+            print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
+
+
+if __name__ == '__main__':
+    MainPrompt().cmdloop('Welcome! Type \'help\' to obtain a list of commands.')
