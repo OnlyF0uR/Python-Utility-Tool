@@ -2,7 +2,7 @@ from cmd import Cmd
 from tabulate import tabulate
 
 
-# Some colours
+# Some colours, yes with a 'u'
 RESET = '\u001b[0m'
 RED = '\u001b[31m'
 GREEN = '\u001b[32m'
@@ -18,7 +18,6 @@ class MainPrompt(Cmd):
         print('\nAll commands for this prompt can be found below: ')
         cmd_list = [
             ['encryption', 'Encrypt & Decrypt text'],
-            ['encoding', 'Encode & Decode text'],
             ['hashing', 'Hash some text'],
             ['passgen', 'Create a rock(you) solid password'],
             ['collatz', 'Plot a collatz conjecture'],
@@ -31,7 +30,7 @@ class MainPrompt(Cmd):
             print('Goodbye! :)')
             return True
 
-        if ln in ['encryption', 'encoding', 'hashing', 'passgen', 'collatz']:
+        if ln in ['encryption', 'hashing', 'passgen', 'collatz']:
             # First we import the appropiate module/file
             mod = __import__(ln)
             # Then we get the main class and start the command loop

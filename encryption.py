@@ -1,10 +1,11 @@
 from cmd import Cmd
-from main import BLUE, CYAN, RED, RESET, GREEN
 from tabulate import tabulate
-from main import MainPrompt
+
 from Crypto.Cipher import AES, DES, DES3, ARC2, Blowfish, CAST, Salsa20
 from Crypto.Random import get_random_bytes
 from base64 import b64encode, b64decode
+
+from main import MainPrompt, BLUE, CYAN, RED, RESET, GREEN
 
 
 def bytes_to_base64(byte_input):
@@ -59,10 +60,10 @@ class Prompt(Cmd):
             'description': 'The mac that can be obtained after encryption',
             'required': False
         },
-        'VERBOSE': {
-            'value': False,
-            'description': 'Output valuable (debug) logging data',
-            'required': True
+        'IV': {
+            'value': None,
+            'description': 'The initialization vector that can be obtained after encryption',
+            'required': False
         }
     }
 
@@ -146,18 +147,7 @@ class Prompt(Cmd):
 
             # Convert all the byte variables to base64
             ciptext = bytes_to_base64(cip.encrypt(txt))
-
-            # We split this because we can then log the raw bytes with verbose
-            dig = cip.digest()
-            mac = bytes_to_base64(dig)
-
-            # Check for verbose
-            if self.settings['VERBOSE']['value']:
-                print('Encrypting with: ')
-                print(type(txt), txt)
-                print(type(key), key)
-                print(type(nonce), nonce)
-                print(type(dig), dig)
+            mac = bytes_to_base64(cip.digest())
 
             key = bytes_to_base64(key)
             nonce = bytes_to_base64(nonce)
@@ -178,16 +168,19 @@ class Prompt(Cmd):
             # Create cipher
             cip = DES.new(key, DES.MODE_OFB)
 
-            ciptext = bytes_to_base64(cip.iv + cip.encrypt(txt))
+            # Translate some variables into base, including the encrypted bytes
+            ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            iv = bytes_to_base64(cip.iv)
 
             # Set some config values automatically
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['IV']['value'] = iv
 
             # Print the result
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
-        elif cph == 'Tiple-DES':
+            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+        elif cph == 'Triple-DES':
             def gen_des3_key():
                 # So why do we do this?
                 # Well according to the documentation this must be done to
@@ -217,37 +210,44 @@ class Prompt(Cmd):
 
             cip = DES3.new(key, DES3.MODE_CFB)
 
-            ciptext = bytes_to_base64(cip.iv + cip.encrypt(txt))
+            # Translate some variables into base, including the encrypted bytes
+            ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            iv = bytes_to_base64(cip.iv)
 
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
+            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'RC2':
             key = self.__get_byte_setting__('KEY', 16)
 
             cip = ARC2.new(key, ARC2.MODE_CFB)
 
-            ciptext = bytes_to_base64(cip.iv + cip.encrypt(txt))
+            ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            iv = bytes_to_base64(cip.iv)
 
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
+            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'Blowfish':
             key = self.__get_byte_setting__('KEY', 32)
 
             cip = Blowfish.new(key, Blowfish.MODE_CBC)
 
-            ciptext = bytes_to_base64(cip.iv + cip.encrypt(txt))
+            ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            iv = bytes_to_base64(cip.iv)
 
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
+            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'CAST-128':
             key = self.__get_byte_setting__('KEY', 16)
 
@@ -255,11 +255,13 @@ class Prompt(Cmd):
 
             ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            iv = bytes_to_base64(cip.iv)
 
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
+            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
 
         # Symmetric Streams
         elif cph == 'Salsa20':
@@ -267,13 +269,15 @@ class Prompt(Cmd):
 
             cip = Salsa20.new(key)
 
-            ciptext = bytes_to_base64(cip.nonce + cip.encrypt(txt))
+            ciptext = bytes_to_base64(cip.encrypt(txt))
             key = bytes_to_base64(key)
+            nonce = bytes_to_base64(cip.nonce)
 
             self.settings['TEXT']['value'] = ciptext
             self.settings['KEY']['value'] = key
+            self.settings['NONCE']['value'] = nonce
 
-            print('Key: {key}\nOutput: {output}'.format(key=key, output=ciptext))
+            print('Key: {key}\nNonce: {nonce}\nOutput: {output}'.format(key=key, nonce=nonce, output=ciptext))
         else:
             print(RED + 'You configured an invalid cipher.')
             return
@@ -293,24 +297,18 @@ class Prompt(Cmd):
         key = self.settings['KEY']['value']
         nonce = self.settings['NONCE']['value']
         mac = self.settings['MAC']['value']
+        iv = self.settings['IV']['value']
 
         # Symmetric Blocks
         if cph == 'AES':
             if key is None or nonce is None:
                 print(RED + '(AES) The following values are required: ', ' - KEY', ' - NONCE', ' - MAC', sep='\n')
+                return
 
             # Define the variables
             key = base64_to_bytes(key)
             nonce = base64_to_bytes(nonce)
             mac = base64_to_bytes(mac)
-
-            # Check for verbose
-            if self.settings['VERBOSE']['value']:
-                print('Decrypting with: ')
-                print(type(txt), txt)
-                print(type(key), key)
-                print(type(nonce), nonce)
-                print(type(mac), mac)
 
             # Create cipher
             cip = AES.new(key, AES.MODE_EAX, nonce=nonce)
@@ -318,32 +316,102 @@ class Prompt(Cmd):
             try:
                 # Verify using the mac and decrypt it
                 ciptext = cip.decrypt_and_verify(txt, mac)
-                print(GREEN + 'Decryption successful: ' + ciptext)
+                print(GREEN + '(AES) Decryption successful: ' + RESET + ciptext.decode())
             except ValueError:
-                print(RED + 'Decryption failed.')
+                print(RED + '(AES) Decryption failed.')
 
         elif cph == 'Single-DES':
-            print('todo')
-        elif cph == 'Tiple-DES':
-            print('todo')
+            if key is None or iv is None:
+                print(RED + '(Single-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            iv = base64_to_bytes(iv)
+
+            # Create cipher
+            cip = DES.new(key, DES.MODE_OFB, iv=iv)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(Single-DES) Decryption successful: ' + RESET + ciptext.decode())
+        elif cph == 'Triple-DES':
+            if key is None or iv is None:
+                print(RED + '(Triple-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            iv = base64_to_bytes(iv)
+
+            # Create cipher
+            cip = DES3.new(key, DES3.MODE_CFB, iv=iv)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(Triple-DES) Decryption successful: ' + RESET + ciptext.decode())
         elif cph == 'RC2':
-            print('todo')
+            if key is None or iv is None:
+                print(RED + '(RC2) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            iv = base64_to_bytes(iv)
+
+            # Create cipher
+            cip = ARC2.new(key, ARC2.MODE_CFB, iv=iv)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(RC2) Decryption successful: ' + RESET + ciptext.decode())
         elif cph == 'Blowfish':
-            print('todo')
+            if key is None or iv is None:
+                print(RED + '(Blowfish) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            iv = base64_to_bytes(iv)
+
+            # Create cipher
+            cip = Blowfish.new(key, Blowfish.MODE_CBC, iv=iv)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(Blowfish) Decryption successful: ' + RESET + ciptext.decode())
         elif cph == 'CAST-128':
-            print('todo')
+            if key is None or iv is None:
+                print(RED + '(CAST-128) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            iv = base64_to_bytes(iv)
+
+            # Create cipher
+            cip = CAST.new(key, CAST.MODE_OPENPGP, iv=iv)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(CAST-128) Decryption successful: ' + RESET + ciptext.decode())
 
         # Symmetric Streams
         elif cph == 'Salsa20':
-            print('todo')
+            if key is None or nonce is None:
+                print(RED + '(Salsa20) The following values are required: ', ' - KEY', ' - NONCE', sep='\n')
+                return
+
+            key = base64_to_bytes(key)
+            nonce = base64_to_bytes(nonce)
+
+            cip = Salsa20.new(key, nonce=nonce)
+            ciptext = cip.decrypt(txt)
+
+            print(GREEN + '(Salsa20) Decryption successful: ' + RESET + ciptext.decode())
         else:
             print(RED + 'You configured an invalid cipher.')
             return
 
     def do_ciphers(self, _ln):
-        print('-----[Symmetric]-----',
-              'Block: AES, Single-DES, Triple-DES, RC2, Blowfish, CAST-128',
-              'Stream: Salsa20', sep='\n', end='\n\n')
+        print(BLUE + '-----[Symmetric]-----',
+              RESET + 'Please note that all ciphers use a predefined MODE they use to encrypt & decrypt. This',
+              'MODE may differ depending on the cipher, this also explains why some ciphers use',
+              'NONCE and others use IV.',
+              'AES is the most standard in this PoC and also uses an additional MAC or TAG value to',
+              'verify and decrypt.',
+              CYAN + 'Block: ' + RESET + 'AES, Single-DES, Triple-DES, RC2, Blowfish, CAST-128',
+              CYAN + 'Stream: ' + RESET + 'Salsa20', sep='\n', end='\n\n')
 
     def default(self, ln):
         ln = ln.lower()
