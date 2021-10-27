@@ -69,6 +69,7 @@ class Prompt(Cmd):
     def do_help(self, _ln):
         print('\nAll commands that can be used within this module can be found below: ')
         cmd_list = [
+            ['info', 'Obtain information about this module'],
             ['settings', 'View current settings'],
             ['set', 'Set the value of a setting'],
             ['unset', 'Unset a certain setting'],
@@ -79,6 +80,9 @@ class Prompt(Cmd):
         ]
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
                                                                                     BLUE + "Description" + RESET]))
+
+    def do_info(self, _ln):
+        print('todo')
 
     def do_settings(self, _ln):
         settings_list = []
@@ -190,18 +194,23 @@ class Prompt(Cmd):
                 # ~ stop Triple DES from degrading to Single DES
                 while 1:
                     try:
-                        key = DES3.adjust_key_parity(get_random_bytes(24))
+                        # Set the bits in a TDES key (des3_key to prevent shadowing)
+                        des3_key = DES3.adjust_key_parity(get_random_bytes(24))
                         break
                     except ValueError:
                         pass
 
-                return key
+                # Finally, return the key
+                return des3_key
 
             # Check for already configured key
             if self.settings['KEY']['value'] is not None:
+                # Check if byte is valid
                 if is_valid_byte(24, self.settings['KEY']['value']):
+                    # Set the local key to the configured key
                     key = base64_to_bytes(self.settings['KEY']['value'])
                 else:
+                    # Generate a new key
                     key = gen_des3_key()
             else:
                 key = gen_des3_key()
