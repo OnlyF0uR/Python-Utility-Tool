@@ -2,6 +2,7 @@ from cmd import Cmd
 from tabulate import tabulate
 
 
+# Some colours
 RESET = '\u001b[0m'
 RED = '\u001b[31m'
 GREEN = '\u001b[32m'
@@ -10,8 +11,8 @@ CYAN = '\u001b[36m'
 
 
 class MainPrompt(Cmd):
+    # Specify the line cursor
     prompt = '{blue}program {cyan}➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
-    use_rawinput = True
 
     def do_help(self, arg: str):
         print('\nAll commands for this prompt can be found below: ')
@@ -41,4 +42,5 @@ class MainPrompt(Cmd):
 
 
 if __name__ == '__main__':
+    # Start the main prompt loop
     MainPrompt().cmdloop('Welcome! Type \'help\' to obtain a list of commands.')
