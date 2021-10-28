@@ -1,2 +1,3 @@
 tabulate
 pycryptodome
+matplotlib
