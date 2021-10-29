@@ -1,5 +1,6 @@
 from cmd import Cmd
 from tabulate import tabulate
+from distutils import util
 
 
 # Some colours, yes with a 'u'

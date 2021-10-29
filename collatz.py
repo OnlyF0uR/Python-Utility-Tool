@@ -26,7 +26,7 @@ class Prompt(Cmd):
         cmd_list = [
             ['settings', 'View current settings'],
             ['set', 'Set the value of a setting'],
-            ['calc', 'Calculate the amount of steps']
+            ['calculate', 'Calculate the amount of steps']
         ]
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
                                                                                     BLUE + "Description" + RESET]))
@@ -62,7 +62,7 @@ class Prompt(Cmd):
         else:
             print(RED + 'That value cannot be set.')
 
-    def do_calc(self, _ln):
+    def do_calculate(self, _ln):
         num = self.settings['NUMBER']['value']
         thres = self.settings['THRESHOLD']['value']
 
