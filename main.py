@@ -41,6 +41,8 @@ class MainPrompt(Cmd):
             print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
 
 
+# When using variables in here use a main function and call it here, since
+# all variables defined in __main__ are defined the the global scope
 if __name__ == '__main__':
     # Start the main prompt loop
     MainPrompt().cmdloop('Welcome! Type \'help\' to obtain a list of commands.')

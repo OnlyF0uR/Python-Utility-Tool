@@ -70,7 +70,6 @@ class Prompt(Cmd):
     def do_help(self, _ln):
         print('\nAll commands that can be used within this module can be found below: ')
         cmd_list = [
-            ['info', 'Obtain information about this module'],
             ['settings', 'View current settings'],
             ['set', 'Set the value of a setting'],
             ['unset', 'Unset a certain setting'],
@@ -81,9 +80,6 @@ class Prompt(Cmd):
         ]
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
                                                                                     BLUE + "Description" + RESET]))
-
-    def do_info(self, _ln):
-        print('todo')
 
     def do_settings(self, _ln):
         settings_list = []

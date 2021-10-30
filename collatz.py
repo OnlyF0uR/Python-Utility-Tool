@@ -76,7 +76,7 @@ class Prompt(Cmd):
                 num /= 2
             else:
                 num = num * 3 + 1
-            s += 1  # Python does not support i++ :(
+            s += 1  # Python does not support s++ :(
             values.append(num)
 
             if s == thres:
