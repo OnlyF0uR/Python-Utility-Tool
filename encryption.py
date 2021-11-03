@@ -5,7 +5,7 @@ from Crypto.Cipher import AES, DES, DES3, ARC2, Blowfish, CAST, Salsa20
 from Crypto.Random import get_random_bytes
 from base64 import b64encode, b64decode
 
-from main import MainPrompt, BLUE, CYAN, RED, RESET, GREEN
+from main import MainPrompt
 
 
 def bytes_to_base64(byte_input):
@@ -31,7 +31,10 @@ def is_valid_byte(req, bt):
 
 
 class Prompt(Cmd):
-    prompt = '{blue}program {cyan}(encryption) ➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
+    def __init__(self, cls):
+        super(Prompt, self).__init__()
+        self.prompt = '{blue}program {cyan}(encryption) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'], reset=cls['RESET'])
+        self.cls = cls
 
     # We define the settings here
     settings = {
@@ -78,8 +81,9 @@ class Prompt(Cmd):
             ['ciphers', 'Obtain a list with supported ciphers'],
             ['back', 'Return to the previous prompt']
         ]
-        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
-                                                                                    BLUE + "Description" + RESET]))
+        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_settings(self, _ln):
         settings_list = []
@@ -88,10 +92,11 @@ class Prompt(Cmd):
             settings_list.append([s, self.settings[s]['value'], self.settings[s]['description'],
                                   self.settings[s]['required'] and 'Yes' or 'No'])
 
-        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Setting" + RESET,
-                                                                                         BLUE + "Value" + RESET,
-                                                                                         BLUE + "Description" + RESET,
-                                                                                         BLUE + "Required" + RESET]))
+        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Setting" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Value" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Required" + self.cls['RESET']]))
 
     def do_set(self, ln):
         arr = ln.split(' ')
@@ -103,9 +108,9 @@ class Prompt(Cmd):
         if opt_name in self.settings:
             # Split the input into key and value
             self.settings[opt_name]['value'] = opt_value
-            print(GREEN + 'Successfully updated the settings.')
+            print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be set.')
+            print(self.cls['RED'] + 'That value cannot be set.')
 
     def do_unset(self, ln):
         opt_name = ln.upper()
@@ -113,13 +118,13 @@ class Prompt(Cmd):
         # Check if the specified setting exists
         if opt_name in self.settings:
             if self.settings[opt_name]['required']:
-                print(RED + 'You cannot unset a required variable, try \'set\' instead.')
+                print(self.cls['RED'] + 'You cannot unset a required variable, try \'set\' instead.')
             else:
                 # Split the input into key and value
                 self.settings[opt_name]['value'] = None
-                print(GREEN + 'Successfully updated the settings.')
+                print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be unset.')
+            print(self.cls['RED'] + 'That value cannot be unset.')
 
     def do_encrypt(self, ln):
         # Store the cipher setting (cph), and text setting (txt) in a variable for improved readability
@@ -127,7 +132,7 @@ class Prompt(Cmd):
         txt = self.settings['TEXT']['value']
 
         if txt is None:
-            print(RED + 'There was no text set.')
+            print(self.cls['RED'] + 'There was no text set.')
             return
 
         txt = txt.encode()
@@ -275,7 +280,7 @@ class Prompt(Cmd):
 
             print('Key: {key}\nNonce: {nonce}\nOutput: {output}'.format(key=key, nonce=nonce, output=ciptext))
         else:
-            print(RED + 'You configured an invalid cipher.')
+            print(self.cls['RED'] + 'You configured an invalid cipher.')
             return
 
     def do_decrypt(self, ln):
@@ -283,7 +288,7 @@ class Prompt(Cmd):
         txt = self.settings['TEXT']['value']
 
         if txt is None:
-            print(RED + 'There was no text set.')
+            print(self.cls['RED'] + 'There was no text set.')
             return
 
         # Decode the encoded bytes
@@ -298,7 +303,7 @@ class Prompt(Cmd):
         # Symmetric Blocks
         if cph == 'AES':
             if key is None or nonce is None:
-                print(RED + '(AES) The following values are required: ', ' - KEY', ' - NONCE', ' - MAC', sep='\n')
+                print(self.cls['RED'] + '(AES) The following values are required: ', ' - KEY', ' - NONCE', ' - MAC', sep='\n')
                 return
 
             # Define the variables
@@ -312,13 +317,13 @@ class Prompt(Cmd):
             try:
                 # Verify using the mac and decrypt it
                 ciptext = cip.decrypt_and_verify(txt, mac)
-                print(GREEN + '(AES) Decryption successful: ' + RESET + ciptext.decode())
+                print(self.cls['GREEN'] + '(AES) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
             except ValueError:
-                print(RED + '(AES) Decryption failed.')
+                print(self.cls['RED'] + '(AES) Decryption failed.')
 
         elif cph == 'Single-DES':
             if key is None or iv is None:
-                print(RED + '(Single-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                print(self.cls['RED'] + '(Single-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -328,10 +333,10 @@ class Prompt(Cmd):
             cip = DES.new(key, DES.MODE_OFB, iv=iv)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(Single-DES) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(Single-DES) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         elif cph == 'Triple-DES':
             if key is None or iv is None:
-                print(RED + '(Triple-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                print(self.cls['RED'] + '(Triple-DES) The following values are required: ', ' - KEY', ' - IV', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -341,10 +346,10 @@ class Prompt(Cmd):
             cip = DES3.new(key, DES3.MODE_CFB, iv=iv)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(Triple-DES) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(Triple-DES) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         elif cph == 'RC2':
             if key is None or iv is None:
-                print(RED + '(RC2) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                print(self.cls['RED'] + '(RC2) The following values are required: ', ' - KEY', ' - IV', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -354,10 +359,10 @@ class Prompt(Cmd):
             cip = ARC2.new(key, ARC2.MODE_CFB, iv=iv)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(RC2) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(RC2) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         elif cph == 'Blowfish':
             if key is None or iv is None:
-                print(RED + '(Blowfish) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                print(self.cls['RED'] + '(Blowfish) The following values are required: ', ' - KEY', ' - IV', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -367,10 +372,10 @@ class Prompt(Cmd):
             cip = Blowfish.new(key, Blowfish.MODE_CBC, iv=iv)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(Blowfish) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(Blowfish) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         elif cph == 'CAST-128':
             if key is None or iv is None:
-                print(RED + '(CAST-128) The following values are required: ', ' - KEY', ' - IV', sep='\n')
+                print(self.cls['RED'] + '(CAST-128) The following values are required: ', ' - KEY', ' - IV', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -380,12 +385,12 @@ class Prompt(Cmd):
             cip = CAST.new(key, CAST.MODE_OPENPGP, iv=iv)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(CAST-128) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(CAST-128) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
 
         # Symmetric Streams
         elif cph == 'Salsa20':
             if key is None or nonce is None:
-                print(RED + '(Salsa20) The following values are required: ', ' - KEY', ' - NONCE', sep='\n')
+                print(self.cls['RED'] + '(Salsa20) The following values are required: ', ' - KEY', ' - NONCE', sep='\n')
                 return
 
             key = base64_to_bytes(key)
@@ -394,29 +399,29 @@ class Prompt(Cmd):
             cip = Salsa20.new(key, nonce=nonce)
             ciptext = cip.decrypt(txt)
 
-            print(GREEN + '(Salsa20) Decryption successful: ' + RESET + ciptext.decode())
+            print(self.cls['GREEN'] + '(Salsa20) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         else:
-            print(RED + 'You configured an invalid cipher.')
+            print(self.cls['RED'] + 'You configured an invalid cipher.')
             return
 
     def do_ciphers(self, _ln):
-        print(BLUE + '-----[Symmetric]-----',
-              RESET + 'Please note that all ciphers use a predefined MODE they use to encrypt & decrypt. This',
+        print(self.cls['BLUE'] + '-----[Symmetric]-----',
+              self.cls['RESET'] + 'Please note that all ciphers use a predefined MODE they use to encrypt & decrypt. This',
               'MODE may differ depending on the cipher, this also explains why some ciphers use',
               'NONCE and others use IV.',
               'AES is the most standard in this PoC and also uses an additional MAC or TAG value to',
               'verify and decrypt.',
-              CYAN + 'Block: ' + RESET + 'AES, Single-DES, Triple-DES, RC2, Blowfish, CAST-128',
-              CYAN + 'Stream: ' + RESET + 'Salsa20', sep='\n', end='\n\n')
+              self.cls['CYAN'] + 'Block: ' + self.cls['RESET'] + 'AES, Single-DES, Triple-DES, RC2, Blowfish, CAST-128',
+              self.cls['CYAN'] + 'Stream: ' + self.cls['RESET'] + 'Salsa20', sep='\n', end='\n\n')
 
     def default(self, ln):
         ln = ln.lower()
 
         if ln == 'back' or ln == 'b':
-            MainPrompt().cmdloop()
+            MainPrompt(self.cls).cmdloop()
             return True
 
-        print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
+        print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])
 
     def __get_byte_setting__(self, setting, byte_value):
         # Check if the setting's value is set

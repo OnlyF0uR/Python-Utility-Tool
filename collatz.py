@@ -3,11 +3,14 @@ from cmd import Cmd
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 
-from main import MainPrompt, BLUE, CYAN, RED, RESET, GREEN
+from main import MainPrompt
 
 
 class Prompt(Cmd):
-    prompt = '{blue}program {cyan}(collatz) ➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
+    def __init__(self, cls):
+        super(Prompt, self).__init__()
+        self.prompt = '{blue}program {cyan}(collatz) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'], reset=cls['RESET'])
+        self.cls = cls
 
     # We define the settings here
     settings = {
@@ -28,8 +31,9 @@ class Prompt(Cmd):
             ['set', 'Set the value of a setting'],
             ['calculate', 'Calculate the amount of steps']
         ]
-        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
-                                                                                    BLUE + "Description" + RESET]))
+        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_settings(self, _ln):
         settings_list = []
@@ -37,9 +41,10 @@ class Prompt(Cmd):
         for s in self.settings:
             settings_list.append([s, self.settings[s]['value'], self.settings[s]['description']])
 
-        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Setting" + RESET,
-                                                                                         BLUE + "Value" + RESET,
-                                                                                         BLUE + "Description" + RESET]))
+        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Setting" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Value" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_set(self, ln):
         arr = ln.split(' ')
@@ -55,12 +60,12 @@ class Prompt(Cmd):
                     raise ValueError()
                 self.settings[opt_name]['value'] = num
             except ValueError:
-                print(RED + 'You must enter a number that is greater than 0.')
+                print(self.cls['RED'] + 'You must enter a number that is greater than 0.')
                 return
 
-            print(GREEN + 'Successfully updated the settings.')
+            print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be set.')
+            print(self.cls['RED'] + 'That value cannot be set.')
 
     def do_calculate(self, _ln):
         num = self.settings['NUMBER']['value']
@@ -84,16 +89,17 @@ class Prompt(Cmd):
                 break
 
         if success:
-            print(GREEN + 'Finished in ' + str(s) + ' steps.' + RESET)
+            print(self.cls['GREEN'] + 'Finished in ' + str(s) + ' steps.' + self.cls['RESET'])
         else:
-            print(GREEN + 'Finished in ' + str(s) + ' steps. (Threshold reached)' + RESET)
+            print(self.cls['GREEN'] + 'Finished in ' + str(s) + ' steps. (Threshold reached)' + self.cls['RESET'])
 
         while True:
             try:
-                plot_result = bool(util.strtobool(input('Would you like to plot the result? Enter \'yes\' or \'no\': ')))
+                plot_result = bool(
+                    util.strtobool(input('Would you like to plot the result? Enter \'yes\' or \'no\': ')))
                 break
             except ValueError:
-                print(RED + 'You must enter either \'yes\' or \'no\': ')
+                print(self.cls['RED'] + 'You must enter either \'yes\' or \'no\': ')
 
         if plot_result:
             # plt.plot(list(range(0, len(values))), values)
@@ -107,7 +113,7 @@ class Prompt(Cmd):
         ln = ln.lower()
 
         if ln == 'back' or ln == 'b':
-            MainPrompt().cmdloop()
+            MainPrompt(self.cls).cmdloop()
             return True
 
-        print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
+        print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])

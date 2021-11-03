@@ -6,7 +6,7 @@ from Crypto.Protocol.KDF import bcrypt, bcrypt_check, scrypt
 from Crypto.Random import get_random_bytes
 from base64 import b64encode, b64decode
 
-from main import MainPrompt, BLUE, CYAN, RED, RESET, GREEN
+from main import MainPrompt
 
 
 def bytes_to_base64(byte_input):
@@ -20,7 +20,11 @@ def base64_to_bytes(base64_input):
 
 
 class Prompt(Cmd):
-    prompt = '{blue}program {cyan}(encryption) ➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
+    def __init__(self, cls):
+        super(Prompt, self).__init__()
+        self.prompt = '{blue}program {cyan}(hashing) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'],
+                                                                       reset=cls['RESET'])
+        self.cls = cls
 
     # We define the settings here
     settings = {
@@ -56,8 +60,9 @@ class Prompt(Cmd):
             ['check', 'Check if a hash (TEXT) matches a generate hash (HASH)'],
             ['hashes', 'Obtain a list with supported hashes'],
         ]
-        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
-                                                                                    BLUE + "Description" + RESET]))
+        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_settings(self, _ln):
         settings_list = []
@@ -66,10 +71,11 @@ class Prompt(Cmd):
             settings_list.append([s, self.settings[s]['value'], self.settings[s]['description'],
                                   self.settings[s]['required'] and 'Yes' or 'No'])
 
-        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Setting" + RESET,
-                                                                                         BLUE + "Value" + RESET,
-                                                                                         BLUE + "Description" + RESET,
-                                                                                         BLUE + "Required" + RESET]))
+        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Setting" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Value" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Required" + self.cls['RESET']]))
 
     def do_set(self, ln):
         arr = ln.split(' ')
@@ -81,9 +87,9 @@ class Prompt(Cmd):
         if opt_name in self.settings:
             # Split the input into key and value
             self.settings[opt_name]['value'] = opt_value
-            print(GREEN + 'Successfully updated the settings.')
+            print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be set.')
+            print(self.cls['RED'] + 'That value cannot be set.')
 
     def do_unset(self, ln):
         opt_name = ln.upper()
@@ -91,20 +97,20 @@ class Prompt(Cmd):
         # Check if the specified setting exists
         if opt_name in self.settings:
             if self.settings[opt_name]['required']:
-                print(RED + 'You cannot unset a required variable, try \'set\' instead.')
+                print(self.cls['RED'] + 'You cannot unset a required variable, try \'set\' instead.')
             else:
                 # Split the input into key and value
                 self.settings[opt_name]['value'] = None
-                print(GREEN + 'Successfully updated the settings.')
+                print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be unset.')
+            print(self.cls['RED'] + 'That value cannot be unset.')
 
     def do_hash(self, _ln):
         algo = self.settings['ALGORITHM']['value']
         txt = self.settings['TEXT']['value']
 
         if txt is None:
-            print(RED + 'There was no text set.')
+            print(self.cls['RED'] + 'There was no text set.')
             return
 
         # Convert text to bytes
@@ -125,7 +131,7 @@ class Prompt(Cmd):
         elif algo == 'SHA-1':
             print('todo')
         else:
-            print(RED + 'You configured an invalid algorithm.')
+            print(self.cls['RED'] + 'You configured an invalid algorithm.')
             return
 
     def do_check(self, _ln):
@@ -134,7 +140,7 @@ class Prompt(Cmd):
         hsh = self.settings['HASH']['value']
 
         if txt is None or hsh is None:
-            print(RED + 'There was no text or hash set.')
+            print(self.cls['RED'] + 'There was no text or hash set.')
             return
 
         # Convert text to bytes
@@ -155,23 +161,23 @@ class Prompt(Cmd):
         elif algo == 'SHA-1':
             print('todo')
         else:
-            print(RED + 'You configured an invalid algorithm.')
+            print(self.cls['RED'] + 'You configured an invalid algorithm.')
             return
 
     def do_hashes(self, _ln):
-        print(BLUE + '-----[HASHES]-----',
-              RESET + 'Be aware that some of the algorithms like MD5 and SHA-1 are not '
-                      'secure anymore and should never be used to hash valuable data. '
-                      'An algorithm such as BCrypt defaultly only supports strings of max '
-                      '72 bytes long, therefore we must encrypt the text with another hash (SHA256 in this example) '
-                      'to implement support for longer strings.',
-              CYAN + 'Hashes: ' + RESET + 'SHA-256, SHA-512, BLAKE2b, bcrypt, scrypt, MD5, SHA-1', sep='\n', end='\n\n')
+        print(self.cls['BLUE'] + '-----[HASHES]-----', self.cls['RESET'] +
+              'Be aware that some of the algorithms like MD5 and SHA-1 are not '
+              'secure anymore and should never be used to hash valuable data. '
+              'An algorithm such as BCrypt defaultly only supports strings of max '
+              '72 bytes long, therefore we must encrypt the text with another hash (SHA256 in this example) '
+              'to implement support for longer strings.', self.cls['CYAN'] +
+              'Hashes: ' + self.cls['RESET'] + 'SHA-256, SHA-512, BLAKE2b, bcrypt, scrypt, MD5, SHA-1', sep='\n', end='\n\n')
 
     def default(self, ln):
         ln = ln.lower()
 
         if ln == 'back' or ln == 'b':
-            MainPrompt().cmdloop()
+            MainPrompt(self.cls).cmdloop()
             return True
 
-        print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
+        print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])

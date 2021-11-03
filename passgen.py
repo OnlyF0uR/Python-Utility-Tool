@@ -4,11 +4,14 @@ from tabulate import tabulate
 import string
 import random
 
-from main import MainPrompt, BLUE, CYAN, RED, RESET, GREEN
+from main import MainPrompt
 
 
 class Prompt(Cmd):
-    prompt = '{blue}program {cyan}(passgen) ➥ {reset}'.format(blue=BLUE, cyan=CYAN, reset=RESET)
+    def __init__(self, cls):
+        super(Prompt, self).__init__()
+        self.prompt = '{blue}program {cyan}(passgen) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'], reset=cls['RESET'])
+        self.cls = cls
 
     # We define the settings here
     settings = {
@@ -46,8 +49,9 @@ class Prompt(Cmd):
             ['generate', 'Generate a password'],
             ['back', 'Return to the previous prompt']
         ]
-        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Command" + RESET,
-                                                                                    BLUE + "Description" + RESET]))
+        print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_settings(self, _ln):
         settings_list = []
@@ -55,9 +59,10 @@ class Prompt(Cmd):
         for s in self.settings:
             settings_list.append([s, self.settings[s]['value'], self.settings[s]['description']])
 
-        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid", headers=[BLUE + "Setting" + RESET,
-                                                                                         BLUE + "Value" + RESET,
-                                                                                         BLUE + "Description" + RESET]))
+        print(tabulate(settings_list, stralign="center", tablefmt="fancy_grid",
+                       headers=[self.cls['BLUE'] + "Setting" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Value" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
     def do_set(self, ln):
         arr = ln.split(' ')
@@ -71,23 +76,23 @@ class Prompt(Cmd):
                 try:
                     self.settings['LENGTH']['value'] = int(opt_value)
                 except ValueError:
-                    print(RED + 'You must enter a number.')
+                    print(self.cls['RED'] + 'You must enter a number.')
                     return
             else:
                 try:
                     self.settings[opt_name]['value'] = bool(util.strtobool(opt_value))
                 except ValueError:
-                    print(RED + 'You must enter either \'yes\' or \'no\'.')
+                    print(self.cls['RED'] + 'You must enter either \'yes\' or \'no\'.')
                     return
 
-            print(GREEN + 'Successfully updated the settings.')
+            print(self.cls['GREEN'] + 'Successfully updated the settings.')
         else:
-            print(RED + 'That value cannot be set.')
+            print(self.cls['RED'] + 'That value cannot be set.')
 
     def do_generate(self, _ln):
         lng = self.settings['LENGTH']['value']
         if lng < 1:
-            print(RED + 'You must at least generate one number.')
+            print(self.cls['RED'] + 'You must at least generate one number.')
             return
 
         low = self.settings['LOWERCASE']['value']
@@ -95,7 +100,7 @@ class Prompt(Cmd):
         num = self.settings['NUMBERS']['value']
         sym = self.settings['SYMBOLS']['value']
         if not low and not upp and not num and not sym:
-            print(RED + 'You must at least select one set of allowed characters.')
+            print(self.cls['RED'] + 'You must at least select one set of allowed characters.')
             return
 
         char_set = ''
@@ -117,18 +122,18 @@ class Prompt(Cmd):
             for i in range(0, lng):
                 pwd += char_set[random.randint(0, len(char_set) - 1)]
 
-            print(GREEN + 'Password successfully generated: ' + pwd)
+            print(self.cls['GREEN'] + 'Password successfully generated: ' + pwd)
         else:
             random.shuffle(char_set)
             pwd_arr = random.choices(char_set, k=lng)
 
-            print(GREEN + 'Password successfully generated: ' + ''.join(pwd_arr))
+            print(self.cls['GREEN'] + 'Password successfully generated: ' + ''.join(pwd_arr))
 
     def default(self, ln):
         ln = ln.lower()
 
         if ln == 'back' or ln == 'b':
-            MainPrompt().cmdloop()
+            MainPrompt(self.cls).cmdloop()
             return True
 
-        print(RED + 'That\'s not a valid command. Use \'help\' for a list of commands.' + RESET)
+        print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])
