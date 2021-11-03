@@ -2,21 +2,12 @@ from cmd import Cmd
 from tabulate import tabulate
 
 from Crypto.Hash import SHA256, SHA512, BLAKE2b, MD5, SHA1
-from Crypto.Protocol.KDF import bcrypt, bcrypt_check, scrypt
+from Crypto.Protocol.KDF import bcrypt, scrypt
 from Crypto.Random import get_random_bytes
-from base64 import b64encode, b64decode
+from base64 import b64encode
 
 from main import MainPrompt
-
-
-def bytes_to_base64(byte_input):
-    # Return the encoded bytes as base64
-    return b64encode(byte_input).decode()
-
-
-def base64_to_bytes(base64_input):
-    # Return the decoded bytes
-    return b64decode(base64_input)
+from encryption import bytes_to_base64, base64_to_bytes
 
 
 class Prompt(Cmd):
@@ -28,7 +19,7 @@ class Prompt(Cmd):
 
     # We define the settings here
     settings = {
-        'ALGORITHM': {
+        'ALGO': {
             'value': 'SHA-256',
             'description': 'The algorithm to use for hashing',
             'required': True
@@ -57,7 +48,7 @@ class Prompt(Cmd):
             ['set', 'Set the value of a setting'],
             ['unset', 'Unset a certain setting'],
             ['hash', 'Hash some text (configure first)'],
-            ['check', 'Check if a hash (TEXT) matches a generate hash (HASH)'],
+            ['compare', 'Compare a hash (setting: TEXT) with a generated hash (setting: HASH)'],
             ['hashes', 'Obtain a list with supported hashes'],
         ]
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
@@ -106,36 +97,33 @@ class Prompt(Cmd):
             print(self.cls['RED'] + 'That value cannot be unset.')
 
     def do_hash(self, _ln):
-        algo = self.settings['ALGORITHM']['value']
         txt = self.settings['TEXT']['value']
 
         if txt is None:
             print(self.cls['RED'] + 'There was no text set.')
             return
 
-        # Convert text to bytes
-        txt = txt.encode()
+        algo = self.settings['ALGO']['value']
+        slt = self.settings['SALT']['value']  # Is allowed to be None
 
-        if algo == 'SHA-256':
-            print('todo')
-        elif algo == 'SHA-512':
-            print('todo')
-        elif algo == 'BLAKE2b':
-            print('todo')
-        elif algo == 'bcrypt':
-            print('todo')
-        elif algo == 'scrypt':
-            print('todo')
-        elif algo == 'MD5':
-            print('todo')
-        elif algo == 'SHA-1':
-            print('todo')
-        else:
-            print(self.cls['RED'] + 'You configured an invalid algorithm.')
+        if slt is not None:
+            slt = base64_to_bytes(slt)
+
+        # Generate a hash
+        res, salt = self.__hash_text__(algo, txt.encode(), slt)
+        if res is None:
+            print(self.cls['RED'] + 'You configured an invalid algorithm. (Case sensitive)')
             return
 
-    def do_check(self, _ln):
-        algo = self.settings['ALGORITHM']['value']
+        self.settings['HASH']['value'] = res
+
+        if salt is not None:
+            self.settings['SALT']['value'] = salt
+            print('--=({algo})=--\nSalt: {salt}\nHash: {output}'.format(algo=algo, salt=salt, output=res))
+        else:
+            print('--=({algo})=--\nHash: {output}'.format(algo=algo, output=res))
+
+    def do_compare(self, _ln):
         txt = self.settings['TEXT']['value']
         hsh = self.settings['HASH']['value']
 
@@ -143,26 +131,22 @@ class Prompt(Cmd):
             print(self.cls['RED'] + 'There was no text or hash set.')
             return
 
-        # Convert text to bytes
-        txt = txt.encode()
+        algo = self.settings['ALGO']['value']
+        salt = self.settings['SALT']['value']
 
-        if algo == 'SHA-256':
-            print('todo')
-        elif algo == 'SHA-512':
-            print('todo')
-        elif algo == 'BLAKE2b':
-            print('todo')
-        elif algo == 'bcrypt':
-            print('todo')
-        elif algo == 'scrypt':
-            print('todo')
-        elif algo == 'MD5':
-            print('todo')
-        elif algo == 'SHA-1':
-            print('todo')
-        else:
-            print(self.cls['RED'] + 'You configured an invalid algorithm.')
+        if (algo == 'bcrypt' or algo == 'scrypt') and salt is None:
+            print(self.cls['RED'] + 'A salt is required for that algorithm.')
             return
+
+        res, salt = self.__hash_text__(algo, txt.encode(), salt)
+        if res is None:
+            print(self.cls['RED'] + 'You configured an invalid algorithm. (Case sensitive)')
+            return
+
+        if res == hsh:
+            print(self.cls['GREEN'] + '--=({algo})=--\nHashed & Compared: IDENTICAL HASH'.format(algo=algo))
+        else:
+            print(self.cls['RED'] + '--=({algo})=--\nHashed & Compared: DIFFERENT HASH'.format(algo=algo))
 
     def do_hashes(self, _ln):
         print(self.cls['BLUE'] + '-----[HASHES]-----', self.cls['RESET'] +
@@ -181,3 +165,37 @@ class Prompt(Cmd):
             return True
 
         print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])
+
+    def __hash_text__(self, algo, txt, salt):
+        hash_res = None
+
+        if algo == 'SHA-256':
+            hash_res = SHA256.new(txt).hexdigest()
+        elif algo == 'SHA-512':
+            hash_res = SHA512.new(txt).hexdigest()
+        elif algo == 'BLAKE2b':
+            hash_res = BLAKE2b.new(txt).hexdigest()
+        elif algo == 'bcrypt':
+            if salt is None:
+                salt = get_random_bytes(16)
+
+            # bcrypt only support input of 72 bytes long, although we can use a workaround for this
+            # we can first hash the text with something else and encode it to base64
+            base = b64encode(SHA256.new(txt).digest())
+            hash_res = bcrypt(base, cost=12, salt=salt).decode()  # Cost: 4 to 31, at least 12 is recommended
+
+            salt = bytes_to_base64(salt)
+        elif algo == 'scrypt':
+            if salt is None:
+                salt = get_random_bytes(16)
+
+            # key_len = length of key, N = costs, r = block size, p = parallelization
+            hash_res = bytes_to_base64(scrypt(txt, salt, key_len=16, N=2**16, r=8, p=1))
+
+            salt = bytes_to_base64(salt)
+        elif algo == 'MD5':
+            hash_res = MD5.new(txt).hexdigest()
+        elif algo == 'SHA-1':
+            hash_res = SHA1.new(txt).hexdigest()
+
+        return hash_res, salt

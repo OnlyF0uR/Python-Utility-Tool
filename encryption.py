@@ -162,8 +162,8 @@ class Prompt(Cmd):
             self.settings['MAC']['value'] = mac
 
             # Print the result
-            print('Key: {key}\nNonce: {nonce}\nMac: {mac}\nOutput: {output}'.format(key=key, nonce=nonce, mac=mac,
-                                                                                    output=ciptext))
+            print('--=(AES)=--\nKey: {key}\nNonce: {nonce}\nMac: {mac}\nOutput: {output}'.format(
+                key=key, nonce=nonce, mac=mac, output=ciptext))
         elif cph == 'Single-DES':
             # Get or generate the key
             key = self.__get_byte_setting__('KEY', 8)
@@ -182,7 +182,7 @@ class Prompt(Cmd):
             self.settings['IV']['value'] = iv
 
             # Print the result
-            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+            print('--=(Single-DES)=--\nKey: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'Triple-DES':
             def gen_des3_key():
                 # So why do we do this?
@@ -222,7 +222,7 @@ class Prompt(Cmd):
             self.settings['KEY']['value'] = key
             self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+            print('--=(Triple-DES)=--\nKey: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'RC2':
             key = self.__get_byte_setting__('KEY', 16)
 
@@ -236,7 +236,7 @@ class Prompt(Cmd):
             self.settings['KEY']['value'] = key
             self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+            print('--=(RC2)=--\nKey: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'Blowfish':
             key = self.__get_byte_setting__('KEY', 32)
 
@@ -250,7 +250,7 @@ class Prompt(Cmd):
             self.settings['KEY']['value'] = key
             self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+            print('--=(Blowfish)=--\nKey: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
         elif cph == 'CAST-128':
             key = self.__get_byte_setting__('KEY', 16)
 
@@ -264,7 +264,7 @@ class Prompt(Cmd):
             self.settings['KEY']['value'] = key
             self.settings['IV']['value'] = iv
 
-            print('Key: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
+            print('--=(CAST-128)=--\nKey: {key}\nIV: {iv}\nOutput: {output}'.format(key=key, iv=iv, output=ciptext))
 
         # Symmetric Streams
         elif cph == 'Salsa20':
@@ -280,9 +280,9 @@ class Prompt(Cmd):
             self.settings['KEY']['value'] = key
             self.settings['NONCE']['value'] = nonce
 
-            print('Key: {key}\nNonce: {nonce}\nOutput: {output}'.format(key=key, nonce=nonce, output=ciptext))
+            print('--=(Salsa20)=--\nKey: {key}\nNonce: {nonce}\nOutput: {output}'.format(key=key, nonce=nonce, output=ciptext))
         else:
-            print(self.cls['RED'] + 'You configured an invalid cipher.')
+            print(self.cls['RED'] + 'You configured an invalid cipher. (Case sensitive)')
             return
 
     def do_decrypt(self, ln):
@@ -403,7 +403,7 @@ class Prompt(Cmd):
 
             print(self.cls['GREEN'] + '(Salsa20) Decryption successful: ' + self.cls['RESET'] + ciptext.decode())
         else:
-            print(self.cls['RED'] + 'You configured an invalid cipher.')
+            print(self.cls['RED'] + 'You configured an invalid cipher. (Case sensitive)')
             return
 
     def do_ciphers(self, _ln):
