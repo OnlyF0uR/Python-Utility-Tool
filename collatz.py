@@ -81,7 +81,7 @@ class Prompt(Cmd):
                 num /= 2
             else:
                 num = num * 3 + 1
-            s += 1  # Python does not support s++ :(
+            s += 1  # Python does not support ++ :(
             values.append(num)
 
             if s == thres:
@@ -95,8 +95,8 @@ class Prompt(Cmd):
 
         while True:
             try:
-                plot_result = bool(
-                    util.strtobool(input('Would you like to plot the result? Enter \'yes\' or \'no\': ')))
+                # Ask if the results need to be plotted and try to cast the input to a boolean
+                plot_result = bool(util.strtobool(input('Would you like to plot the result? Enter \'yes\' or \'no\': ')))
                 break
             except ValueError:
                 print(self.cls['RED'] + 'You must enter either \'yes\' or \'no\': ')

@@ -19,10 +19,10 @@ def base64_to_bytes(base64_input):
 
 
 def is_valid_byte(req, bt):
-    # Decode to (hopefully) byte
+    # Decode to (hopefully) bytes
     bt = base64_to_bytes(bt)
 
-    # Check if it really is a byte
+    # Check if the type really is "bytes"
     if type(bt) != bytes:
         return False
 
@@ -101,7 +101,9 @@ class Prompt(Cmd):
     def do_set(self, ln):
         arr = ln.split(' ')
 
+        # Get the option name in caps
         opt_name = arr.pop(0).upper()
+        # Join the rest of the array representing the option value
         opt_value = ' '.join(arr)
 
         # Check if the specified setting exists

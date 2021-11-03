@@ -80,8 +80,10 @@ class Prompt(Cmd):
                     return
             else:
                 try:
+                    # Try to convert the input to a boolean
                     self.settings[opt_name]['value'] = bool(util.strtobool(opt_value))
                 except ValueError:
+                    # Catch a value error and display a message
                     print(self.cls['RED'] + 'You must enter either \'yes\' or \'no\'.')
                     return
 
@@ -105,6 +107,7 @@ class Prompt(Cmd):
 
         char_set = ''
 
+        # Construct the char_set string with all the configured character categories
         if low:
             char_set += string.ascii_lowercase
         if upp:
