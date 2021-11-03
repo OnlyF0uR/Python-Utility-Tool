@@ -3,12 +3,17 @@ from tabulate import tabulate
 from distutils import util
 
 
+# Command class for the main prompt
 class MainPrompt(Cmd):
+    # Constructor
     def __init__(self, cls):
         super(MainPrompt, self).__init__()
+        # Set the prompt
         self.prompt = '{blue}program {cyan}➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'], reset=cls['RESET'])
+        # Define the colours for this class
         self.cls = cls
 
+    # Help command
     def do_help(self, arg: str):
         print('\nAll commands for this prompt can be found below: ')
         cmd_list = [
@@ -18,14 +23,18 @@ class MainPrompt(Cmd):
             ['collatz', 'Plot a collatz conjecture'],
             ['quit', 'Quit the prompt']
         ]
+        # Print the command list in the form of a fancy table
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
-                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'], self.cls['BLUE'] + "Description" + self.cls['RESET']]))
+                       headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
+                                self.cls['BLUE'] + "Description" + self.cls['RESET']]))
 
+    # Function for non-registered commands
     def default(self, ln):
         if ln == 'quit' or ln == 'q':
             print('Goodbye! :)')
             return True
 
+        # Check whether the command line is equal to one of our modules
         if ln in ['encryption', 'hashing', 'passgen', 'collatz']:
             # First we import the appropiate module/file
             mod = __import__(ln)
@@ -36,9 +45,8 @@ class MainPrompt(Cmd):
             print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])
 
 
-# When using variables in here use a main function and call it here, since
-# all variables defined in __main__ are defined the the global scope
-if __name__ == '__main__':
+# Main function used to prevent unnecessary global scope variables
+def main():
     print('Does your prompt support ANSI colours?')
 
     allow_colours = None
@@ -50,12 +58,19 @@ if __name__ == '__main__':
 
     colours = {'RESET': '', 'RED': '', 'GREEN': '', 'BLUE': '', 'CYAN': ''}
 
+    # Check if colours are allowed
     if allow_colours:
+        # Set the colours
         colours['RESET'] = '\u001b[0m'
         colours['RED'] = '\u001b[31m'
         colours['GREEN'] = '\u001b[32m'
         colours['BLUE'] = '\u001b[34m'
         colours['CYAN'] = '\u001b[36m'
 
-    # Start the main prompt loop
+    # Start the main prompt loop with an intro message
     MainPrompt(colours).cmdloop('Welcome! Type \'help\' to obtain a list of commands.')
+
+
+if __name__ == '__main__':
+    # Call the main function
+    main()
