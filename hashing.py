@@ -104,13 +104,13 @@ class Prompt(Cmd):
             return
 
         algo = self.settings['ALGO']['value']
-        slt = self.settings['SALT']['value']  # Is allowed to be None
+        salt = self.settings['SALT']['value']  # Is allowed to be None
 
-        if slt is not None:
-            slt = base64_to_bytes(slt)
+        if salt is not None:
+            salt = base64_to_bytes(salt)
 
         # Generate a hash
-        res, salt = self.__hash_text__(algo, txt.encode(), slt)
+        res, salt = self.__hash_text__(algo, txt.encode(), salt)
         if res is None:
             print(self.cls['RED'] + 'You configured an invalid algorithm. (Case sensitive)')
             return
@@ -134,11 +134,14 @@ class Prompt(Cmd):
         algo = self.settings['ALGO']['value']
         salt = self.settings['SALT']['value']
 
-        if (algo == 'bcrypt' or algo == 'scrypt') and salt is None:
-            print(self.cls['RED'] + 'A salt is required for that algorithm.')
-            return
+        if algo == 'bcrypt' or algo == 'scrypt':
+            if salt is None:
+                print(self.cls['RED'] + 'A salt is required for that algorithm.')
+                return
+            else:
+                slt = base64_to_bytes(slt)
 
-        res, salt = self.__hash_text__(algo, txt.encode(), salt)
+        res, salt = self.__hash_text__(algo, txt.encode(), slt)
         if res is None:
             print(self.cls['RED'] + 'You configured an invalid algorithm. (Case sensitive)')
             return
