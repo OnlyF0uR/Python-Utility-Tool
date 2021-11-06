@@ -109,6 +109,8 @@ class Prompt(Cmd):
         if salt is not None:
             salt = base64_to_bytes(salt)
 
+        # Check for salt length (16)
+
         # Generate a hash
         res, salt = self.__hash_text__(algo, txt.encode(), salt)
         if res is None:
@@ -139,9 +141,11 @@ class Prompt(Cmd):
                 print(self.cls['RED'] + 'A salt is required for that algorithm.')
                 return
             else:
-                slt = base64_to_bytes(slt)
+                salt = base64_to_bytes(salt)
 
-        res, salt = self.__hash_text__(algo, txt.encode(), slt)
+        # Check for salt length (16)
+
+        res, salt = self.__hash_text__(algo, txt.encode(), salt)
         if res is None:
             print(self.cls['RED'] + 'You configured an invalid algorithm. (Case sensitive)')
             return

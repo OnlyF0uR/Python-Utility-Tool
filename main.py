@@ -14,7 +14,7 @@ class MainPrompt(Cmd):
         self.cls = cls
 
     # Help command
-    def do_help(self, arg: str):
+    def do_help(self, _ln):
         print('\nAll commands for this prompt can be found below: ')
         cmd_list = [
             ['encryption', 'Encrypt & Decrypt text'],
