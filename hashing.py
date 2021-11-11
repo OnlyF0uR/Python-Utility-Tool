@@ -13,15 +13,14 @@ from encryption import bytes_to_base64, base64_to_bytes
 class Prompt(Cmd):
     def __init__(self, cls):
         super(Prompt, self).__init__()
-        self.prompt = '{blue}program {cyan}(hashing) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'],
-                                                                       reset=cls['RESET'])
+        self.prompt = '{blue}program {cyan}(hashing) ➥ {reset}'.format(blue=cls['BLUE'], cyan=cls['CYAN'], reset=cls['RESET'])
         self.cls = cls
 
     # We define the settings here
     settings = {
         'ALGO': {
             'value': 'SHA-256',
-            'description': 'The specific algorithm, use \'hashes\' for a complete list',
+            'description': 'Use \'algos\' for a complete list',
             'required': True
         },
         'TEXT': {
@@ -31,12 +30,12 @@ class Prompt(Cmd):
         },
         'HASH': {
             'value': None,
-            'description': 'The hash to compare to (Only for comparing)',
+            'description': 'Hash to compare to (Only for comparing)',
             'required': False
         },
         'SALT': {
             'value': None,
-            'description': 'The salt used for hashing (Auto-Gen)',
+            'description': 'Additional safeguard value',
             'required': False
         }
     }
@@ -49,7 +48,7 @@ class Prompt(Cmd):
             ['unset', 'Unset a certain setting'],
             ['hash', 'Hash some text (configure first)'],
             ['compare', 'Compare a hash (setting: TEXT) with a generated hash (setting: HASH)'],
-            ['hashes', 'Obtain a list with supported hashes'],
+            ['algos', 'Obtain a list with supported hashing algorithms'],
         ]
         print(tabulate(cmd_list, stralign="center", tablefmt="fancy_grid",
                        headers=[self.cls['BLUE'] + "Command" + self.cls['RESET'],
@@ -149,14 +148,14 @@ class Prompt(Cmd):
         else:
             print(self.cls['RED'] + '--=({algo})=--\nHashed & Compared: DIFFERENT HASH'.format(algo=algo))
 
-    def do_hashes(self, _ln):
-        print(self.cls['BLUE'] + '-----[HASHES]-----', self.cls['RESET'] +
+    def do_algos(self, _ln):
+        print(self.cls['BLUE'] + '-----[ALGORITHMS]-----', self.cls['RESET'] +
               'Be aware that some of the algorithms like MD5 and SHA-1 are not '
               'secure anymore and should never be used to hash valuable data. '
-              'An algorithm such as BCrypt defaultly only supports strings of max '
-              '72 bytes long, therefore we must encrypt the text with another hash (SHA256 in this example) '
+              'An algorithm such as bcrypt defaultly only supports strings of max '
+              '72 bytes long, therefore we must encrypt the text with another hash (SHA256 in this instance) '
               'to implement support for longer strings.', self.cls['CYAN'] +
-              'Hashes: ' + self.cls['RESET'] + 'SHA-256, SHA-512, BLAKE2b, bcrypt, scrypt, MD5, SHA-1', sep='\n', end='\n\n')
+              'Algorithms: ' + self.cls['RESET'] + 'SHA-256, SHA-512, BLAKE2b, bcrypt, scrypt, MD5, SHA-1', sep='\n', end='\n\n')
 
     def default(self, ln):
         ln = ln.lower()

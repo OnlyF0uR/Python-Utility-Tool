@@ -43,12 +43,12 @@ class Prompt(Cmd):
     settings = {
         'CIPHER': {
             'value': 'AES',
-            'description': 'The specific cipher, use \'ciphers\' for a complete list',
+            'description': 'Use \'ciphers\' for a complete list',
             'required': True
         },
         'KEY': {
             'value': None,
-            'description': 'The key to use for encryption/decryption (Auto-Gen)',
+            'description': 'A secret key',
             'required': False
         },
         'TEXT': {
@@ -58,17 +58,17 @@ class Prompt(Cmd):
         },
         'NONCE': {
             'value': None,
-            'description': 'The nonce to use for encryption/decryption (Auto-Gen)',
+            'description': 'Number used in communication',
             'required': False
         },
         'MAC': {
             'value': None,
-            'description': 'The mac to use for encryption/decryption (Auto-Gen)',
+            'description': 'Message Authentication Code',
             'required': False
         },
         'IV': {
             'value': None,
-            'description': 'The initialization vector used for encryption/decryption (Auto-Gen)',
+            'description': 'Initialization Vector',
             'required': False
         }
     }
