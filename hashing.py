@@ -21,7 +21,7 @@ class Prompt(Cmd):
     settings = {
         'ALGO': {
             'value': 'SHA-256',
-            'description': 'The algorithm to use for hashing',
+            'description': 'The specific algorithm, use \'hashes\' for a complete list',
             'required': True
         },
         'TEXT': {
@@ -31,12 +31,12 @@ class Prompt(Cmd):
         },
         'HASH': {
             'value': None,
-            'description': 'Only used for comparing hashes',
+            'description': 'The hash to compare to (Only for comparing)',
             'required': False
         },
         'SALT': {
             'value': None,
-            'description': 'The salt that gets generated when hashing',
+            'description': 'The salt used for hashing (Auto-Gen)',
             'required': False
         }
     }

@@ -48,7 +48,7 @@ class Prompt(Cmd):
         },
         'KEY': {
             'value': None,
-            'description': 'The key to use for encryption/decryption',
+            'description': 'The key to use for encryption/decryption (Auto-Gen)',
             'required': False
         },
         'TEXT': {
@@ -58,17 +58,17 @@ class Prompt(Cmd):
         },
         'NONCE': {
             'value': None,
-            'description': 'The nonce that can be obtained after encryption/decryption',
+            'description': 'The nonce to use for encryption/decryption (Auto-Gen)',
             'required': False
         },
         'MAC': {
             'value': None,
-            'description': 'The mac that can be obtained after encryption',
+            'description': 'The mac to use for encryption/decryption (Auto-Gen)',
             'required': False
         },
         'IV': {
             'value': None,
-            'description': 'The initialization vector that can be obtained after encryption',
+            'description': 'The initialization vector used for encryption/decryption (Auto-Gen)',
             'required': False
         }
     }
