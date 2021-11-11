@@ -45,7 +45,7 @@ class MainPrompt(Cmd):
             print(self.cls['RED'] + 'That\'s not a valid command. Use \'help\' for a list of commands.' + self.cls['RESET'])
 
 
-# Main function used to prevent unnecessary global scope variables
+# Main function (prevents unnecessary global scope variables)
 def main():
     print('Does your prompt support ANSI colours?')
 
