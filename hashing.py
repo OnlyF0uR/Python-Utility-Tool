@@ -109,8 +109,6 @@ class Prompt(Cmd):
         if salt is not None:
             salt = base64_to_bytes(salt)
 
-        # Check for salt length (16)
-
         # Generate a hash
         res, salt = self.__hash_text__(algo, txt.encode(), salt)
         if res is None:
@@ -134,16 +132,12 @@ class Prompt(Cmd):
             return
 
         algo = self.settings['ALGO']['value']
-        salt = self.settings['SALT']['value']
+        salt = self.settings['SALT']['value'] if self.settings['SALT']['value'] is None else base64_to_bytes(self.settings['SALT']['value'])
 
         if algo == 'bcrypt' or algo == 'scrypt':
             if salt is None:
                 print(self.cls['RED'] + 'A salt is required for that algorithm.')
                 return
-            else:
-                salt = base64_to_bytes(salt)
-
-        # Check for salt length (16)
 
         res, salt = self.__hash_text__(algo, txt.encode(), salt)
         if res is None:
@@ -181,7 +175,7 @@ class Prompt(Cmd):
         elif algo == 'SHA-512':
             hash_res = SHA512.new(txt).hexdigest()
         elif algo == 'BLAKE2b':
-            hash_res = BLAKE2b.new(txt).hexdigest()
+            hash_res = BLAKE2b.new(key=txt).hexdigest()
         elif algo == 'bcrypt':
             if salt is None:
                 salt = get_random_bytes(16)
